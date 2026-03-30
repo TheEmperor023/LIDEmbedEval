@@ -10,7 +10,7 @@ from src.utils.make_random_forest_report import make_forest_report
 import src.utils.load_dataset as loads
 import os
 
-def run_random_forest(graph, method):
+def run_random_forest(graph, method, dataset_path, reports_path):
     # graph = 'florentine_families_graph'
     # method = 'diff'
     n2v_avg_accuracy = []
@@ -28,13 +28,13 @@ def run_random_forest(graph, method):
     lidn2v_ext_avg_recall = []
     lidn2v_ext_avg_f1 = []
     lidn2v_ext_avg_fpr = []
-    path_name = '/Users/vukdermanovic/grasp/graspe/data/datasets/balanced_datasets/link_pred_datasets/'+graph+'/train'
+    path_name = dataset_path + graph +'/train'
     path = Path(path_name)
     for f in path.iterdir():
         name, extension = os.path.splitext(f.name)
         if method == 'diff':
             X_train, y_train = loads.load_from_file_diff(f)
-            X_test, y_test = loads.load_from_file_diff('/Users/vukdermanovic/grasp/graspe/data/datasets/balanced_datasets/link_pred_datasets/'+ graph +'/test/'+ name + ".testset")
+            X_test, y_test = loads.load_from_file_diff(dataset_path + graph +'/test/'+ name + ".testset")
         elif method == 'concat':
             X_train, y_train = loads.load_from_file(f)
         y_train = y_train.astype(int)
@@ -103,10 +103,10 @@ def run_random_forest(graph, method):
         print(f"F1 Score:  {f1:.4f}\n")
         print("Classification Report:")
         print(report)
-        folder_path = '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/' + graph + '/Random Forest/' + method
+        folder_path = reports_path + graph + '/Random Forest/' + method
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-        path = '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/'+ graph +'/Random Forest/'+ method + '/' + f.name + 'forest_report.txt'
+        path = folder_path + '/' + f.name + 'forest_report.txt'
         make_forest_report(y_test, y_pred, path, f.name)
     print("LID-Aware N2V Metrics:")
     print(f"Average Accuracy: {np.mean(lidn2v_avg_accuracy):.2f}")
@@ -129,7 +129,7 @@ def run_random_forest(graph, method):
     print(f"Average F1-Score: {np.mean(n2v_avg_f1):.2f}")
     print(f"Average FPR: {np.mean(n2v_avg_fpr):.2f}")
     print()
-    file_name = '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/' + graph + '/Random Forest/' + method + '_average_forest_report.txt'
+    file_name = reports_path + graph + '/Random Forest/' + method + '_average_forest_report.txt'
     with open(file_name, "w") as f:
         f.write("LID-Aware N2V Metrics:\n")
         f.write(f"Average Accuracy: {np.mean(lidn2v_avg_accuracy):.2f}\n")
@@ -154,4 +154,4 @@ def run_random_forest(graph, method):
         f.write('\n')
 
 if __name__ == '__main__':
-    run_random_forest("citeseer", 'diff')
+    run_random_forest("cora", 'diff', '/Users/vukdermanovic/grasp/graspe/data/datasets/1_to_n_sampled_datasets_n=4_p=1/link_pred_datasets', '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/1_to_n_sampled_datasets_n=4_p=1/')

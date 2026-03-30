@@ -16,7 +16,7 @@ from pathlib import Path
 from src.utils.make_nn_report import make_nn_report
 import os
 
-def run_nn(graph, method):
+def run_nn(graph, method, dataset_path, reports_path):
     # graph = 'florentine_families_graph'
     # method = 'diff'
     n2v_avg_accuracy = []
@@ -34,14 +34,14 @@ def run_nn(graph, method):
     lidn2v_ext_avg_recall = []
     lidn2v_ext_avg_f1 = []
     lidn2v_ext_avg_fpr = []
-    path_name = '/Users/vukdermanovic/grasp/graspe/data/datasets/balanced_datasets/link_pred_datasets/' + graph + '/train'
+    path_name = dataset_path + graph + '/train'
     path = Path(path_name)
     for f in path.iterdir():
         name, extension = os.path.splitext(f.name)
         if method == 'diff':
             X_train, y_train = loads.load_from_file_diff(f)
             X_test, y_test = loads.load_from_file_diff(
-                '/Users/vukdermanovic/grasp/graspe/data/datasets/balanced_datasets/link_pred_datasets/' + graph + '/test/' + name + ".testset")
+                dataset_path + graph + '/test/' + name + ".testset")
         elif method == 'concat':
             X_train, y_train = loads.load_from_file(f)
         y_train = y_train.astype(int)
@@ -125,10 +125,10 @@ def run_nn(graph, method):
         print(f"F1 Score:  {f1:.4f}\n")
         print("Classification Report:")
         print(report)
-        folder_path = '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/' + graph + '/NN/' + method
+        folder_path = reports_path + graph + '/NN/' + method
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
-        path = '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/' + graph + '/NN/' + method + '/' + f.name + '_nn_report.txt'
+        path = folder_path + '/' + f.name + '_nn_report.txt'
         make_nn_report(y_test, y_pred, path, f.name, model)
     print("LID-Aware N2V Metrics:")
     print(f"Average Accuracy: {np.mean(lidn2v_avg_accuracy):.2f}")
@@ -151,7 +151,7 @@ def run_nn(graph, method):
     print(f"Average F1-Score: {np.mean(n2v_avg_f1):.2f}")
     print(f"Average FPR: {np.mean(n2v_avg_fpr):.2f}")
     print()
-    file_name = '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/' + graph + '/NN/' + method + '_average_nn_report.txt'
+    file_name = reports_path + graph + '/NN/' + method + '_average_nn_report.txt'
     with open(file_name, "w") as f:
         f.write("LID-Aware N2V Metrics:\n")
         f.write(f"Average Accuracy: {np.mean(lidn2v_avg_accuracy):.2f}\n")
@@ -176,4 +176,4 @@ def run_nn(graph, method):
         f.write('\n')
 
 if __name__ == '__main__':
-    run_nn('citeseer', 'diff')
+    run_nn('cora', 'diff', '/Users/vukdermanovic/grasp/graspe/data/datasets/1_to_n_sampled_datasets_n=4_p=1/link_pred_datasets', '/Users/vukdermanovic/Faks/MasterRad/LIDEmbedEval/reports/Link Prediction/Supervised Reports/1_to_n_sampled_datasets_n=4_p=1/')
